@@ -1,29 +1,48 @@
 # Laravel SMS Gateway Melipayamak Driver
 
-Melipayamak driver package for [`misaf/laravel-sms-gateway`](https://github.com/misaf/laravel-sms-gateway).
+Melipayamak SMS gateway driver for [`misaf/laravel-sms-gateway`](https://github.com/misaf/laravel-sms-gateway).
 
 ## Installation
 
 ```bash
-composer require misaf/laravel-sms-gateway misaf/laravel-sms-gateway-melipayamak
+composer require misaf/laravel-sms-gateway-melipayamak
 ```
 
-Laravel package discovery registers `Misaf\LaravelSmsGatewayMelipayamak\MelipayamakSmsGatewayServiceProvider` automatically.
+Laravel package discovery registers the driver service provider automatically.
 
-## Usage
-
-Set the default driver when this provider should be used by default:
+## Configuration
 
 ```env
 SMS_GATEWAY_DRIVER=melipayamak
+SMS_GATEWAY_MELIPAYAMAK_USERNAME=your-username
+SMS_GATEWAY_MELIPAYAMAK_PASSWORD=your-password
 ```
 
-Then configure the provider credentials in `config/services.php` and use the shared facade:
+```php
+// config/services.php
+'melipayamak' => [
+    'username' => env('SMS_GATEWAY_MELIPAYAMAK_USERNAME'),
+    'password' => env('SMS_GATEWAY_MELIPAYAMAK_PASSWORD'),
+],
+```
+
+## Usage
 
 ```php
 use Misaf\LaravelSmsGateway\Facade\SmsGateway;
 
-SmsGateway::driver('melipayamak')->request();
+$response = SmsGateway::driver('melipayamak')->send([
+    'to'      => '09123456789',
+    'message' => 'Hello',
+]);
+```
+
+The payload is passed directly to Melipayamak, so use the fields expected by the Melipayamak API.
+
+Use `request()` when you need direct access to Laravel's HTTP client:
+
+```php
+$request = SmsGateway::driver('melipayamak')->request();
 ```
 
 ## Testing
