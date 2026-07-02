@@ -20,11 +20,11 @@ final class MelipayamakSmsGatewayServiceProvider extends PackageServiceProvider
     public function packageRegistered(): void
     {
         $this->app->afterResolving(SmsGatewayManager::class, function (SmsGatewayManager $manager, Application $app): void {
-            $manager->extend('melipayamak', fn (): MelipayamakDriver => $app->make(MelipayamakDriver::class));
+            $manager->extend('melipayamak', fn(): MelipayamakDriver => $app->make(MelipayamakDriver::class));
         });
 
         if ($this->app->bound('sms-gateway')) {
-            $this->app->make('sms-gateway')->extend('melipayamak', fn (): MelipayamakDriver => $this->app->make(MelipayamakDriver::class));
+            $this->app->make('sms-gateway')->extend('melipayamak', fn(): MelipayamakDriver => $this->app->make(MelipayamakDriver::class));
         }
     }
 }
