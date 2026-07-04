@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace Misaf\LaravelSmsGatewayMelipayamak\Drivers;
 
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
 use Misaf\LaravelSmsGateway\SmsGatewayDriver;
 
 final class MelipayamakDriver extends SmsGatewayDriver
 {
-    protected function driverName(): string
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function send(array $data): Response
     {
-        return 'melipayamak';
+        return $this->request()->post('SendSMS/SendSMS', $data);
     }
 
-    protected function defaultGateway(): string
+    protected function defaultBaseUrl(): string
     {
         return 'https://rest.payamak-panel.com/api/';
     }
@@ -24,8 +28,8 @@ final class MelipayamakDriver extends SmsGatewayDriver
         return $request
             ->asForm()
             ->withQueryParameters([
-                'username' => $this->serviceConfigString('username'),
-                'password' => $this->serviceConfigString('password'),
+                'username' => $this->driverConfig('username'),
+                'password' => $this->driverConfig('password'),
             ]);
     }
 }

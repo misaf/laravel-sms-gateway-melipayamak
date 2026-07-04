@@ -15,16 +15,14 @@ test('melipayamak driver sends credentials as query parameters', function (): vo
     $response = ['Value' => '123456789'];
 
     Http::fake([
-        'https://rest.payamak-panel.com/api/SendSMS/SendSMS*' => Http::response($response, 200),
+        'https://rest.payamak-panel.com/api/*' => Http::response($response, 200),
     ]);
 
-    $result = SmsGateway::driver()->request()
-        ->post('SendSMS/SendSMS', [
-            'to'   => '09123456789',
-            'from' => '50004000',
-            'text' => 'Hello from Melipayamak',
-        ])
-        ->json();
+    $result = SmsGateway::driver()->send([
+        'to'   => '09123456789',
+        'from' => '50004000',
+        'text' => 'Hello from Melipayamak',
+    ])->json();
 
     Http::assertSent(function (Request $request): bool {
         $query = Uri::of($request->url())->query()->all();
@@ -39,4 +37,21 @@ test('melipayamak driver sends credentials as query parameters', function (): vo
     });
 
     expect($result)->toEqual($response);
+});
+
+test('prefers the base URL configured in services over the driver default', function (): void {
+    config()->set('sms_gateway.default', 'melipayamak');
+    config()->set('services.melipayamak.base_url', 'https://services-override.example.test/');
+
+    Http::fake([
+        'https://services-override.example.test/*' => Http::response(['Value' => '1'], 200),
+    ]);
+
+    SmsGateway::driver()->send([
+        'text' => 'Hello',
+    ]);
+
+    Http::assertSent(function (Request $request): bool {
+        return 'https://services-override.example.test/SendSMS/SendSMS' === strtok($request->url(), '?');
+    });
 });

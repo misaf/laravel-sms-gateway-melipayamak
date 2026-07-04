@@ -23,8 +23,19 @@ SMS_GATEWAY_MELIPAYAMAK_PASSWORD=your-password
 'melipayamak' => [
     'username' => env('SMS_GATEWAY_MELIPAYAMAK_USERNAME'),
     'password' => env('SMS_GATEWAY_MELIPAYAMAK_PASSWORD'),
+    'base_url' => env('SMS_GATEWAY_MELIPAYAMAK_BASE_URL', 'https://rest.payamak-panel.com/api/'),
 ],
 ```
+
+## Driver Behavior
+
+| Option | Value |
+| --- | --- |
+| Driver name | `melipayamak` |
+| Default base URL | `https://rest.payamak-panel.com/api/` |
+| `send()` endpoint | `POST SendSMS/SendSMS` |
+| Authentication | `username` and `password` query parameters from `services.melipayamak.username` and `services.melipayamak.password` |
+| Payload | Form data sent directly to Melipayamak |
 
 ## Usage
 
@@ -32,8 +43,9 @@ SMS_GATEWAY_MELIPAYAMAK_PASSWORD=your-password
 use Misaf\LaravelSmsGateway\Facade\SmsGateway;
 
 $response = SmsGateway::driver('melipayamak')->send([
-    'to'      => '09123456789',
-    'message' => 'Hello',
+    'to'   => '09123456789',
+    'from' => '50004000',
+    'text' => 'Hello from Melipayamak',
 ]);
 ```
 
