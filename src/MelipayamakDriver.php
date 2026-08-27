@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Misaf\LaravelSmsGatewayMelipayamak\Drivers;
+namespace Misaf\LaravelSmsGatewayMelipayamak;
 
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;

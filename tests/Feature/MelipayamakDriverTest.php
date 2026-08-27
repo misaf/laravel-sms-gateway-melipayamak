@@ -5,12 +5,12 @@ declare(strict_types=1);
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Uri;
-use Misaf\LaravelSmsGateway\Facade\SmsGateway;
+use Misaf\LaravelSmsGateway\Facades\SmsGateway;
 
 test('melipayamak driver sends credentials as query parameters', function (): void {
-    config()->set('sms_gateway.default', 'melipayamak');
-    config()->set('services.melipayamak.username', 'melipayamak-username');
-    config()->set('services.melipayamak.password', 'melipayamak-password');
+    config()->set('laravel-sms-gateway.default', 'melipayamak');
+    config()->set('laravel-sms-gateway-melipayamak.username', 'melipayamak-username');
+    config()->set('laravel-sms-gateway-melipayamak.password', 'melipayamak-password');
 
     $response = ['Value' => '123456789'];
 
@@ -39,9 +39,9 @@ test('melipayamak driver sends credentials as query parameters', function (): vo
     expect($result)->toEqual($response);
 });
 
-test('prefers the base URL configured in services over the driver default', function (): void {
-    config()->set('sms_gateway.default', 'melipayamak');
-    config()->set('services.melipayamak.base_url', 'https://services-override.example.test/');
+test('prefers the base URL configured in the driver config over the driver default', function (): void {
+    config()->set('laravel-sms-gateway.default', 'melipayamak');
+    config()->set('laravel-sms-gateway-melipayamak.base_url', 'https://services-override.example.test/');
 
     Http::fake([
         'https://services-override.example.test/*' => Http::response(['Value' => '1'], 200),
