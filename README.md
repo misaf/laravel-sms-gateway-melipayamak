@@ -1,6 +1,11 @@
-# Laravel SMS Gateway Melipayamak Driver
+# Laravel SMS Gateway — Melipayamak Driver
 
-Melipayamak SMS gateway driver for [`misaf/laravel-sms-gateway`](https://github.com/misaf/laravel-sms-gateway).
+A [Melipayamak](https://www.payamak-panel.com) SMS driver for
+[`misaf/laravel-sms-gateway`](https://github.com/misaf/laravel-sms-gateway).
+
+## Requirements
+
+PHP 8.4+, Laravel 13, `misaf/laravel-sms-gateway`.
 
 ## Installation
 
@@ -8,9 +13,8 @@ Melipayamak SMS gateway driver for [`misaf/laravel-sms-gateway`](https://github.
 composer require misaf/laravel-sms-gateway-melipayamak
 ```
 
-Laravel package discovery registers the driver service provider automatically.
-
-## Configuration
+The service provider auto-registers a `melipayamak` driver on the core manager. Point
+the core package at it:
 
 ```env
 SMS_GATEWAY_DRIVER=melipayamak
@@ -18,62 +22,65 @@ SMS_GATEWAY_MELIPAYAMAK_USERNAME=your-username
 SMS_GATEWAY_MELIPAYAMAK_PASSWORD=your-password
 ```
 
-Publish the config file if you want to edit it directly:
+Publish the config:
 
 ```bash
 php artisan vendor:publish --tag=sms-gateway-melipayamak-config
+# or
+php artisan sms-gateway-melipayamak:install
 ```
-
-```php
-<?php
-
-declare(strict_types=1);
-
-return [
-    'username' => env('SMS_GATEWAY_MELIPAYAMAK_USERNAME'),
-    'password' => env('SMS_GATEWAY_MELIPAYAMAK_PASSWORD'),
-    'base_url' => env('SMS_GATEWAY_MELIPAYAMAK_BASE_URL'),
-];
-```
-
-## Driver Behavior
-
-| Option | Value |
-| --- | --- |
-| Driver name | `melipayamak` |
-| Default base URL | `https://rest.payamak-panel.com/api/` |
-| `send()` endpoint | `POST SendSMS/SendSMS` |
-| Authentication | `username` and `password` query parameters from `laravel-sms-gateway-melipayamak.username` and `laravel-sms-gateway-melipayamak.password` |
-| Payload | Form data sent directly to Melipayamak |
 
 ## Usage
+
+With `SMS_GATEWAY_DRIVER=melipayamak`, the core facade uses this driver with no
+further changes:
 
 ```php
 use Misaf\LaravelSmsGateway\Facades\SmsGateway;
 
-$response = SmsGateway::driver('melipayamak')->send([
-    'to'  => '09123456789',
+$response = SmsGateway::driver()->send([
+    'to' => '09123456789',
     'from' => '50004000',
     'text' => 'Hello from Melipayamak',
 ]);
 ```
 
-The payload is passed directly to Melipayamak, so use the fields expected by the Melipayamak API.
-
-Use `request()` when you need direct access to Laravel's HTTP client:
+To use it for a single call regardless of the default, name it:
 
 ```php
-$request = SmsGateway::driver('melipayamak')->request();
+$response = SmsGateway::driver('melipayamak')->send($data);
 ```
 
-## Development
+`send()` posts to `POST SendSMS/SendSMS`, form-encoded. The payload goes straight to Melipayamak, so use
+the fields its API expects.
 
-This package is developed in the
-[`misaf/laravel-sms-gateway`](https://github.com/misaf/laravel-sms-gateway)
-monorepo at `src/Drivers/laravel-sms-gateway-melipayamak` and split out here on release. Open issues and
-pull requests against the monorepo; run `composer test` and `composer analyse`
-from its root.
+Reach the configured Laravel HTTP client directly with `request()` to call any
+other Melipayamak endpoint:
+
+```php
+$response = SmsGateway::driver('melipayamak')->request()->get('some/endpoint');
+```
+
+Every request dispatches `Misaf\LaravelSmsGateway\Events\SmsSent` with the
+driver name `melipayamak` and the HTTP request and response.
+
+## Configuration
+
+`config/sms-gateway-melipayamak.php`:
+
+- `username` / `password` — your Melipayamak (Payamak-panel) credentials (`SMS_GATEWAY_MELIPAYAMAK_USERNAME`, `SMS_GATEWAY_MELIPAYAMAK_PASSWORD`), sent as the `username` and `password` query parameters
+- `base_url` — the endpoint (`SMS_GATEWAY_MELIPAYAMAK_BASE_URL`), defaulting to `https://rest.payamak-panel.com/api/`
+
+Timeouts are shared with the core package — `SMS_GATEWAY_TIMEOUT` and
+`SMS_GATEWAY_CONNECT_TIMEOUT` from `config/sms-gateway.php`.
+
+## Contributing
+
+This repository is a read-only split of the
+[monorepo](https://github.com/misaf/laravel-sms-gateway); commits made here are
+overwritten by the next split. Open issues and pull requests against the
+monorepo, where this driver lives at `Drivers/laravel-sms-gateway-melipayamak`.
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).

@@ -8,9 +8,9 @@ use Illuminate\Support\Uri;
 use Misaf\LaravelSmsGateway\Facades\SmsGateway;
 
 test('melipayamak driver sends credentials as query parameters', function (): void {
-    config()->set('laravel-sms-gateway.default', 'melipayamak');
-    config()->set('laravel-sms-gateway-melipayamak.username', 'melipayamak-username');
-    config()->set('laravel-sms-gateway-melipayamak.password', 'melipayamak-password');
+    config()->set('sms-gateway.default', 'melipayamak');
+    config()->set('sms-gateway-melipayamak.username', 'melipayamak-username');
+    config()->set('sms-gateway-melipayamak.password', 'melipayamak-password');
 
     $response = ['Value' => '123456789'];
 
@@ -40,8 +40,8 @@ test('melipayamak driver sends credentials as query parameters', function (): vo
 });
 
 test('prefers the base URL configured in the driver config over the driver default', function (): void {
-    config()->set('laravel-sms-gateway.default', 'melipayamak');
-    config()->set('laravel-sms-gateway-melipayamak.base_url', 'https://services-override.example.test/');
+    config()->set('sms-gateway.default', 'melipayamak');
+    config()->set('sms-gateway-melipayamak.base_url', 'https://services-override.example.test/');
 
     Http::fake([
         'https://services-override.example.test/*' => Http::response(['Value' => '1'], 200),

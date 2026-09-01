@@ -5,11 +5,24 @@ declare(strict_types=1);
 namespace Misaf\LaravelSmsGatewayMelipayamak;
 
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\Response;
-use Misaf\LaravelSmsGateway\SmsGatewayDriver;
+use Illuminate\Support\Facades\Http;
+use Misaf\LaravelSmsGateway\Contracts\SmsGateway;
+use Misaf\LaravelSmsGateway\Events\SmsSent;
 
-final class MelipayamakDriver extends SmsGatewayDriver
+final class MelipayamakDriver implements SmsGateway
 {
+    private const string DEFAULT_BASE_URL = 'https://rest.payamak-panel.com/api/';
+
+    public function __construct(
+        private readonly string $username = '',
+        private readonly string $password = '',
+        private readonly string $baseUrl = '',
+        private readonly int $timeout = 10,
+        private readonly int $connectTimeout = 5,
+    ) {}
+
     /**
      * @param array<string, mixed> $data
      */
@@ -18,18 +31,20 @@ final class MelipayamakDriver extends SmsGatewayDriver
         return $this->request()->post('SendSMS/SendSMS', $data);
     }
 
-    protected function defaultBaseUrl(): string
+    public function request(): PendingRequest
     {
-        return 'https://rest.payamak-panel.com/api/';
-    }
-
-    protected function configureRequest(PendingRequest $request): PendingRequest
-    {
-        return $request
+        return Http::baseUrl('' !== $this->baseUrl ? $this->baseUrl : self::DEFAULT_BASE_URL)
+            ->timeout($this->timeout)
+            ->connectTimeout($this->connectTimeout)
             ->asForm()
             ->withQueryParameters([
-                'username' => $this->driverConfig('username'),
-                'password' => $this->driverConfig('password'),
-            ]);
+                'username' => $this->username,
+                'password' => $this->password,
+            ])
+            ->afterResponse(function (Response $response, Request $request): Response {
+                SmsSent::dispatch('melipayamak', $request, $response);
+
+                return $response;
+            });
     }
 }
